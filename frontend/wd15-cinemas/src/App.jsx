@@ -1,0 +1,953 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Movies from './Movies';
+import Experiences from './Experiences';
+import AdminDashboard from "./AdminDashboard";
+import {
+  Search, User, Menu, X, ChevronRight, ChevronLeft, Play,
+  Ticket, Star, Info, Lock, Eye, EyeOff, CreditCard,
+  CheckCircle2, Clock, ShoppingBag, Armchair, Plus, Minus,
+  Utensils, ShieldCheck, AlertCircle, Trash2, Edit3, Heart,
+  Coffee, Pizza, Popcorn,
+  Smartphone, Phone, Mail, MapPin, Globe
+} from 'lucide-react';
+
+import { FaFacebook, FaInstagram } from "react-icons/fa";
+
+// --- MOCK DATABASE (OOP Structure) ---
+
+const INITIAL_MOVIES = [
+  {
+    id: 1,
+    title: "Dune: Part Two",
+    image: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg",
+    tags: ["Action", "Sci-Fi"],
+    rating: 4.8,
+    duration: "2h 46m",
+    status: "Now Showing",
+    prices: { adult: 1350, child: 900 },
+    trailerUrl: "https://www.youtube.com/embed/Way9Dexny3w",
+    synopsis: "Paul Atreides unites with the Fremen for revenge."
+  },
+
+  {
+    id: 2,
+    title: "Kingdom of the Planet of the Apes",
+    image: "https://tse3.mm.bing.net/th/id/OIP.i63Tprb5wvHn8iOnQawfmQHaK_?rs=1&pid=ImgDetMain&o=7&rm=3",
+    tags: ["Action", "Adventure"],
+    rating: 4.5,
+    duration: "2h 25m",
+    status: "Now Showing",
+    prices: { adult: 1250, child: 850 },
+    trailerUrl: "https://www.youtube.com/embed/Kdr5oedn7q8",
+    synopsis: "A young ape questions everything after Caesar."
+  },
+
+  {
+    id: 3,
+    title: "The Fall Guy",
+    image: "https://static1.colliderimages.com/wordpress/wp-content/uploads/2024/03/the-fall-guy-poster.jpeg",
+    tags: ["Action", "Comedy"],
+    rating: 4.3,
+    duration: "2h 06m",
+    status: "Now Showing",
+    prices: { adult: 1150, child: 700 },
+    trailerUrl: "https://www.youtube.com/embed/j7jPnwVGdZ8",
+    synopsis: "A stuntman gets involved in a missing star case."
+  },
+
+  {
+    id: 4,
+    title: "Godzilla x Kong",
+    image: "https://image.tmdb.org/t/p/w500/z1p34vh7dEOnLDmyCrlUVLuoDzd.jpg",
+    tags: ["Action", "Sci-Fi"],
+    rating: 4.6,
+    duration: "1h 55m",
+    status: "Now Showing",
+    prices: { adult: 1300, child: 800 },
+    trailerUrl: "https://www.youtube.com/embed/lV1OOlGwExM",
+    synopsis: "Godzilla and Kong face a hidden threat."
+  },
+
+  {
+    id: 5,
+    title: "Deadpool & Wolverine",
+    image: "https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
+    tags: ["Action", "Comedy"],
+    rating: 4.9,
+    duration: "2h 10m",
+    status: "Now Showing",
+    prices: { adult: 1400, child: 950 },
+    trailerUrl: "https://www.youtube.com/embed/73_1biulkYk",
+    synopsis: "Deadpool teams up with Wolverine in chaos."
+  },
+
+  {
+    id: 6,
+    title: "Inside Out 2",
+    image: "https://tse2.mm.bing.net/th/id/OIP.gyIevw44AcdD8SHqLnbgsAHaLH?rs=1&pid=ImgDetMain&o=7&rm=3",
+    tags: ["Animation", "Family"],
+    rating: 4.7,
+    duration: "1h 45m",
+    status: "Now Showing",
+    prices: { adult: 1100, child: 600 },
+    trailerUrl: "https://www.youtube.com/embed/LEjhY15eCx0",
+    synopsis: "Riley faces new emotions in teenage years."
+  },
+
+  {
+    id: 7,
+    title: "Bad Boys: Ride or Die",
+    image: "https://static1.colliderimages.com/wordpress/wp-content/uploads/2024/04/bad-boys-ride-or-die.jpeg",
+    tags: ["Action", "Comedy"],
+    rating: 4.4,
+    duration: "1h 55m",
+    status: "Now Showing",
+    prices: { adult: 1350, child: 900 },
+    trailerUrl: "https://www.youtube.com/embed/hRFY_Fesa9Q",
+    synopsis: "Miami cops return for another wild mission."
+  },
+
+  {
+    id: 8,
+    title: "Furiosa",
+    image: "https://tse2.mm.bing.net/th/id/OIP.bLcwZv9MDxzjapg3sMqLygHaK-?rs=1&pid=ImgDetMain&o=7&rm=3",
+    tags: ["Action", "Adventure"],
+    rating: 4.6,
+    duration: "2h 28m",
+    status: "Now Showing",
+    prices: { adult: 1300, child: 850 },
+    trailerUrl: "https://www.youtube.com/embed/XJMuhwVlca4",
+    synopsis: "Furiosa fights to survive in a brutal world."
+  },
+
+  {
+    id: 9,
+    title: "Kung Fu Panda 4",
+    image: "https://image.tmdb.org/t/p/w500/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg",
+    tags: ["Animation", "Action"],
+    rating: 4.5,
+    duration: "1h 34m",
+    status: "Now Showing",
+    prices: { adult: 1000, child: 600 },
+    trailerUrl: "https://www.youtube.com/embed/_inKs4eeHiI",
+    synopsis: "Po faces a new villain and trains successor."
+  },
+
+  {
+    id: 10,
+    title: "The Batman",
+    image: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+    tags: ["Action", "Crime"],
+    rating: 4.7,
+    duration: "2h 56m",
+    status: "Now Showing",
+    prices: { adult: 1200, child: 750 },
+    trailerUrl: "https://www.youtube.com/embed/mqqft2x_Aa4",
+    synopsis: "Batman uncovers corruption in Gotham."
+  },
+  {
+    id: 11,
+    title: "Bad Boys: Ride or Die",
+    image: "https://static1.colliderimages.com/wordpress/wp-content/uploads/2024/04/bad-boys-ride-or-die.jpeg",
+    tags: ["Action", "Comedy"],
+    rating: "N/A",
+    duration: "1h 55m",
+    status: "Coming Soon",
+    releaseDate: "June 07, 2024",
+    prices: { adult: 1400, child: 1000 },
+    trailerUrl: "https://www.youtube.com/embed/hRFY_Fesa9Q",
+    synopsis: "The world's favorite Bad Boys are back with their iconic mix of edge-of-your seat action and outrageous comedy."
+  },
+  {
+    id: 12,
+    title: "Spider-Man: Brand New Day",
+    image: "https://www.newdvdreleasedates.com/images/posters/spider-man-brand-new-day-2026.jpg",
+    tags: ["Action", "Comedy"],
+    rating: "N/A",
+    duration: "1h 55m",
+    status: "Now Showing",
+    releaseDate: "June 07, 2026",
+    prices: { adult: 1400, child: 1000 },
+    trailerUrl: "https://www.youtube.com/embed/aBlsrtxuwss",
+    synopsis: "Peter Parker navigates the complexities of his double life as Spider-Man while dealing with the consequences of his actions."
+  },
+  {
+    id: 13,
+    title: "Spider-Man: Brand New Day",
+    image: "https://www.newdvdreleasedates.com/images/posters/spider-man-brand-new-day-2026.jpg",
+    tags: ["Action", "Comedy"],
+    rating: "N/A",
+    duration: "1h 55m",
+    status: "Coming Soon",
+    releaseDate: "June 07, 2026",
+    prices: { adult: 1400, child: 1000 },
+    trailerUrl: "https://youtu.be/aBlsrtxuwss?si=lEBlG1STrBwzef1q",
+    synopsis: "Peter Parker navigates the complexities of his double life as Spider-Man while dealing with the consequences of his actions."
+  }
+];
+
+
+
+const FOOD_MENU = {
+  POPCORN: [
+    { id: 'p1', name: 'Caramel Popcorn (L)', price: 950, detail: 'Large sweet & crunchy' },
+    { id: 'p2', name: 'Salted Popcorn (M)', price: 750, detail: 'Classic salted medium' },
+    { id: 'p3', name: 'Cheese Popcorn (L)', price: 1100, detail: 'Cheesy blast large' }
+  ],
+  BUNS: [
+    { id: 'b1', name: 'Chicken Hotdog', price: 650, detail: 'Classic chicken sausage' },
+    { id: 'b2', name: 'Veg Burger', price: 850, detail: 'Crispy veg patty' },
+    { id: 'b3', name: 'Beef Slider', price: 950, detail: 'Double beef patty' }
+  ],
+  BEVERAGES: [
+    { id: 'v1', name: 'Pepsi 600ml', price: 400, detail: 'Chilled soft drink' },
+    { id: 'v2', name: 'Iced Coffee', price: 550, detail: 'Cold brewed mocha' },
+    { id: 'v3', name: 'Mineral Water', price: 150, detail: '500ml pure water' }
+  ]
+};
+
+const CINEMAS = [
+  "WD15 Multiplex - Havelock City Mall",
+  "WD15 Multiplex - Colombo City Centre",
+  "WD15 Elite - Kiribathgoda",
+  "WD15 Screen - Colpetty"
+];
+
+const SHOWTIMES = ["10:30 AM", "01:15 PM", "04:30 PM", "07:30 PM", "10:15 PM"];
+
+// --- Helper for Dates ---
+const generateDates = () => {
+  const dates = [];
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    dates.push({
+      dayName: days[d.getDay()],
+      dayNum: d.getDate(),
+      month: months[d.getMonth()],
+      full: d.toISOString().split('T')[0]
+    });
+  }
+  return dates;
+};
+
+// --- COMPONENTS ---
+
+const TrailerModal = ({ url, onClose }) => (
+  <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={onClose} />
+    <div className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-in zoom-in duration-300">
+      <button onClick={onClose} className="absolute top-4 right-4 z-10 bg-black/50 p-2 rounded-full hover:bg-red-600 transition-all">
+        <X className="w-6 h-6" />
+      </button>
+      <iframe src={`${url}?autoplay=1`} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
+    </div>
+  </div>
+);
+
+const Navbar = ({ onOpenLogin, user, onLogout, setView }) => (
+  <nav className="fixed top-0 left-0 right-0 z-[60] bg-[#121212]/95 backdrop-blur-md border-b border-white/10">
+    <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+      <div className="flex items-center gap-2 cursor-pointer group" onClick={() => window.location.reload()}>
+        <div className="bg-[#e11d48] p-2 rounded-sm rotate-12 transition-transform group-hover:rotate-0">
+          <Ticket className="text-white w-6 h-6 -rotate-12 group-hover:rotate-0" />
+        </div>
+        <span className="text-2xl font-black tracking-tighter text-white italic uppercase">
+          WD15<span className="text-[#e11d48] ml-0.5">CINEMAS</span>
+        </span>
+      </div>
+
+      <div className="hidden lg:flex items-right gap-8 text-[16px] font-black tracking-[0.2em] text-gray-500 uppercase">
+
+        <button onClick={() => setView('home')} className="hover:text-white">
+          Home
+        </button>
+
+        <button onClick={() => setView('movies')} className="hover:text-white">
+          Movies
+        </button>
+
+        <button onClick={() => setView('experiences')} className="hover:text-white">
+          Experiences
+        </button>
+        <button onClick={() => setView('admin')} className="hover:text-white">
+          Admin
+        </button>
+      </div>
+
+      <div className="flex items-center gap-4">
+        {user ? (
+          <div className="flex items-center gap-3 bg-white/5 pl-4 pr-1 py-1 rounded-full border border-white/10">
+            <span className="text-[10px] font-black text-gray-300">HI, {user.name}</span>
+            <button onClick={onLogout} className="bg-white/10 p-1.5 rounded-full hover:bg-[#e11d48]"><X className="w-3 h-3" /></button>
+          </div>
+        ) : (
+          <button onClick={onOpenLogin} className="bg-[#e11d48] hover:bg-[#be123c] text-white px-6 py-2.5 rounded-full font-black text-[11px] transition-all flex items-center gap-2">
+            <User className="w-4 h-4" /> LOGIN
+          </button>
+        )}
+      </div>
+    </div>
+  </nav>
+);
+
+export default function App() {
+  const [users, setUsers] = useState([
+    { id: 1, name: "Admin", email: "admin@gmail.com", role: "Admin" },
+    { id: 2, name: "Tharusha", email: "user@gmail.com", role: "Customer" }
+  ]);
+  const [cinemas, setCinemas] = useState([
+    { id: 1, name: "Scope Cinemas Colombo" },
+    { id: 2, name: "Kandy City Cinema" },
+    { id: 3, name: "Galle Cinema" }
+  ]);
+  const [shows, setShows] = useState([]);
+  const [view, setView] = useState('home');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [bookingStep, setBookingStep] = useState(1);
+  const [user, setUser] = useState(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [movies, setMovies] = useState(INITIAL_MOVIES);
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [activeTab, setActiveTab] = useState("NOW SHOWING");
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeTrailer, setActiveTrailer] = useState(null);
+  const [fbCategory, setFbCategory] = useState('POPCORN');
+
+  //Login
+  const [authMode, setAuthMode] = useState("login"); // login | signup | otp
+  const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [tempUser, setTempUser] = useState(null);
+
+  const [booking, setBooking] = useState({
+    cinema: '',
+    time: '',
+    date: generateDates()[0].full,
+    adults: 0,
+    children: 0,
+    seats: [],
+    food: [],
+    userDetails: { name: '', email: '', phone: '', tc: false }
+  });
+
+  const totals = useMemo(() => {
+    if (!selectedMovie) return { tickets: 0, food: 0, total: 0 };
+    const tickets = (booking.adults * selectedMovie.prices.adult) + (booking.children * selectedMovie.prices.child);
+    const foodTotal = booking.food.reduce((sum, item) => sum + item.price, 0);
+    return { tickets, food: foodTotal, total: tickets + foodTotal };
+  }, [selectedMovie, booking]);
+
+  const dates = useMemo(() => generateDates(), []);
+
+  const startBooking = (movie) => {
+    if (movie.status === 'Coming Soon') return;
+    setSelectedMovie(movie);
+    setBooking({ ...booking, adults: 1, children: 0, seats: [], food: [], cinema: CINEMAS[0], time: '' });
+    setBookingStep(1);
+    setView('booking');
+  };
+
+  const nextStep = () => {
+    if (bookingStep === 1 && (!booking.cinema || !booking.time)) return;
+    if (bookingStep === 2 && (booking.adults + booking.children === 0)) return;
+    if (bookingStep === 3 && booking.seats.length !== (booking.adults + booking.children)) return;
+    if (bookingStep === 5 && (!booking.userDetails.tc || !booking.userDetails.name)) return;
+    setBookingStep(s => s + 1);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
+      <Navbar
+        user={user}
+        onOpenLogin={() => setIsLoginOpen(true)}
+        onLogout={() => setUser(null)}
+        setView={setView}
+      />
+      {activeTrailer && <TrailerModal url={activeTrailer} onClose={() => setActiveTrailer(null)} />}
+
+      <div className="pt-20">
+        {view === 'home' && (
+          <div className="animate-in fade-in duration-700">
+            {/* Hero */}
+            <div className="relative h-[85vh] bg-black overflow-hidden">
+              {movies.slice(0, 2).map((movie, idx) => (
+                <div key={movie.id} className={`absolute inset-0 transition-opacity duration-1000 ${idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-black/30 z-20" />
+                  <img src={movie.image} className="w-full h-full object-cover animate-slow-zoom" />
+                  <div className="absolute inset-0 flex items-center z-30">
+                    <div className="max-w-7xl mx-auto px-4 w-full space-y-6">
+                      <div className="flex gap-2">
+                        {movie.tags.map(t => <span key={t} className="bg-[#e11d48] px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{t}</span>)}
+                      </div>
+                      <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-[0.9]">{movie.title}</h1>
+                      <div className="flex items-center gap-6 text-sm font-bold text-gray-300">
+                        <button onClick={() => setActiveTrailer(movie.trailerUrl)} className="flex items-center gap-2 hover:text-[#e11d48] transition-colors"><Play className="w-5 h-5 fill-[#e11d48] text-[#e11d48]" /> Watch Trailer</button>
+                        <span className="flex items-center gap-2"><Star className="w-4 h-4 fill-yellow-500 text-yellow-500" /> {movie.rating}</span>
+                      </div>
+                      <button onClick={() => startBooking(movie)} className="bg-white text-black px-12 py-5 rounded-full font-black text-lg hover:bg-[#e11d48] hover:text-white transition-all transform hover:scale-105">BUY TICKETS</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Booking */}
+            <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-40">
+              <div className="bg-[#1e1e1e] border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-end gap-6">
+                <div className="flex-1 w-full space-y-2">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Select Cinema</label>
+                  <select className="w-full bg-[#121212] border border-white/5 text-white p-4 rounded-xl outline-none focus:border-[#e11d48] appearance-none" onChange={(e) => setBooking({ ...booking, cinema: e.target.value })}>
+                    {CINEMAS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="flex-1 w-full space-y-2">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Select Movie</label>
+                  <select id="quick-movie" className="w-full bg-[#121212] border border-white/5 text-white p-4 rounded-xl outline-none focus:border-[#e11d48] appearance-none">
+                    {movies.filter(m => m.status === 'Now Showing').map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
+                  </select>
+                </div>
+                <button onClick={() => startBooking(movies.find(m => m.id == document.getElementById('quick-movie').value))} className="w-full md:w-auto bg-[#e11d48] text-white px-12 py-4 rounded-xl font-black uppercase text-sm tracking-widest">Book Now</button>
+              </div>
+            </div>
+
+            {/* Movie Listings */}
+            <section id="movies-section" className="max-w-7xl mx-auto px-4 py-24">
+              <div className="flex border-b border-white/5 mb-16">
+                {["NOW SHOWING", "COMING SOON"].map(tab => (
+                  <button key={tab} onClick={() => setActiveTab(tab)} className={`px-10 py-5 text-xs font-black tracking-widest relative ${activeTab === tab ? 'text-white' : 'text-gray-500'}`}>
+                    {tab}
+                    {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-1 bg-[#e11d48] rounded-t-full shadow-[0_-4px_12px_rgba(225,29,72,0.6)]" />}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-10">
+                {movies.filter(m => m.status === (activeTab === "NOW SHOWING" ? "Now Showing" : "Coming Soon")).map(movie => (
+                  <div key={movie.id} className="group flex flex-col gap-4">
+                    <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-gray-900 border border-white/5 group-hover:border-[#e11d48] transition-all duration-300">
+                      <img src={movie.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center p-6 gap-4">
+                        <button onClick={() => startBooking(movie)} className="bg-[#e11d48] text-white w-full py-3 rounded-full font-black text-xs">BUY TICKETS</button>
+                        <button onClick={() => setActiveTrailer(movie.trailerUrl)} className="bg-white/10 text-white w-full py-3 rounded-full font-black text-xs">TRAILER</button>
+                      </div>
+                    </div>
+                    <h3 className="font-black italic text-lg group-hover:text-[#e11d48] transition-colors truncate uppercase">{movie.title}</h3>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+        {view === 'movies' && (
+          <Movies
+            movies={movies}
+            startBooking={startBooking}
+            setActiveTrailer={setActiveTrailer}
+          />
+        )}
+        {view === 'experiences' && (
+          <Experiences />
+        )}
+
+        {view === 'admin' && (
+          <AdminDashboard
+            movies={movies}
+            setMovies={setMovies}
+            users={users}
+            setUsers={setUsers}
+            shows={shows}
+            setShows={setShows}
+            cinemas={cinemas}
+            setCinemas={setCinemas}
+          />
+        )}
+
+        {view === 'booking' && (
+          <div className="max-w-7xl mx-auto px-4 py-12 animate-in slide-in-from-bottom duration-500">
+            <div className="flex justify-between items-center max-w-3xl mx-auto mb-20 relative">
+              {[1, 2, 3, 4, 5, 6].map(step => (
+                <div key={step} className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-xs z-10 transition-all ${bookingStep >= step ? 'bg-[#e11d48] scale-110 shadow-[0_0_20px_rgba(225,29,72,0.4)]' : 'bg-white/5 text-gray-500'}`}>{step}</div>
+              ))}
+              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/5 -translate-y-1/2" />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              <div className={`${bookingStep === 1 ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-12`}>
+                {/* Step 1: Cinema & Date & Time */}
+                {bookingStep === 1 && (
+                  <div className="space-y-12 animate-in fade-in">
+                    <div className="text-center space-y-4">
+                      <h2 className="text-4xl font-black italic tracking-tighter uppercase">{selectedMovie.title}</h2>
+                      <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em]">Select Cinema, Date & Time</p>
+                    </div>
+
+                    <div className="max-w-4xl mx-auto space-y-12">
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">1. Select Cinema Location</label>
+                        <select className="w-full bg-[#121212] border border-white/5 p-5 rounded-2xl outline-none focus:border-[#e11d48] text-center" value={booking.cinema} onChange={(e) => setBooking({ ...booking, cinema: e.target.value })}>
+                          {CINEMAS.map(c => <option key={c}>{c}</option>)}
+                        </select>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">2. Select Date</label>
+                        <div className="flex items-center justify-center gap-4 bg-[#121212] p-6 rounded-3xl overflow-x-auto">
+                          {dates.map((d) => (
+                            <button
+                              key={d.full}
+                              onClick={() => setBooking({ ...booking, date: d.full })}
+                              className={`flex flex-col items-center min-w-[100px] py-4 px-2 rounded-2xl transition-all ${booking.date === d.full ? 'bg-[#e11d48] shadow-lg shadow-[#e11d48]/20' : 'hover:bg-white/5'}`}
+                            >
+                              <span className={`text-[11px] font-bold ${booking.date === d.full ? 'text-white' : 'text-gray-500'}`}>{d.month}</span>
+                              <span className="text-3xl font-black my-1">{d.dayNum}</span>
+                              <span className={`text-[11px] font-black ${booking.date === d.full ? 'text-white' : 'text-gray-400'}`}>{d.dayName}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">3. Available Times</label>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                          {SHOWTIMES.map(t => (
+                            <button key={t} onClick={() => setBooking({ ...booking, time: t })} className={`py-4 rounded-xl font-black text-xs border ${booking.time === t ? 'bg-[#e11d48] border-[#e11d48]' : 'bg-white/5 border-white/5 hover:border-white/20'}`}>{t}</button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button onClick={nextStep} className="w-full bg-[#e11d48] py-5 rounded-2xl font-black text-lg tracking-widest uppercase mt-8 hover:bg-[#be123c] transition-all">Select Tickets <ChevronRight className="inline w-5 h-5 ml-2" /></button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Tickets */}
+                {bookingStep === 2 && (
+                  <div className="space-y-8 animate-in fade-in">
+                    <h3 className="text-4xl font-black italic tracking-tighter uppercase">Ticket Selection</h3>
+                    <div className="space-y-4">
+                      <div className="bg-[#121212] p-10 rounded-[2.5rem] flex items-center justify-between border border-white/5">
+                        <div><p className="font-black italic text-xl uppercase">Adult</p><p className="text-xs text-gray-500 font-bold tracking-widest">Rs. {selectedMovie.prices.adult.toLocaleString()}</p></div>
+                        <div className="flex items-center gap-6">
+                          <button onClick={() => setBooking({ ...booking, adults: Math.max(0, booking.adults - 1) })} className="p-3 bg-white/5 rounded-xl hover:bg-[#e11d48]"><Minus className="w-5 h-5" /></button>
+                          <span className="text-3xl font-black w-8 text-center">{booking.adults}</span>
+                          <button onClick={() => setBooking({ ...booking, adults: booking.adults + 1 })} className="p-3 bg-white/5 rounded-xl hover:bg-[#e11d48]"><Plus className="w-5 h-5" /></button>
+                        </div>
+                      </div>
+                      <div className="bg-[#121212] p-10 rounded-[2.5rem] flex items-center justify-between border border-white/5">
+                        <div><p className="font-black italic text-xl uppercase">Child</p><p className="text-xs text-gray-500 font-bold tracking-widest">Rs. {selectedMovie.prices.child.toLocaleString()}</p></div>
+                        <div className="flex items-center gap-6">
+                          <button onClick={() => setBooking({ ...booking, children: Math.max(0, booking.children - 1) })} className="p-3 bg-white/5 rounded-xl hover:bg-[#e11d48]"><Minus className="w-5 h-5" /></button>
+                          <span className="text-3xl font-black w-8 text-center">{booking.children}</span>
+                          <button onClick={() => setBooking({ ...booking, children: booking.children + 1 })} className="p-3 bg-white/5 rounded-xl hover:bg-[#e11d48]"><Plus className="w-5 h-5" /></button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Seats */}
+                {bookingStep === 3 && (
+                  <div className="space-y-10 animate-in fade-in">
+                    <h3 className="text-4xl font-black italic tracking-tighter text-center uppercase">Choose {booking.adults + booking.children} Seats</h3>
+                    <div className="bg-[#121212] p-12 rounded-[3rem] border border-white/5">
+                      <div className="h-1 bg-[#e11d48] rounded-full mb-20 shadow-[0_10px_30px_rgba(225,29,72,0.4)]" />
+                      <div className="grid grid-cols-10 gap-3 place-items-center">
+                        {Array.from({ length: 40 }).map((_, i) => {
+                          const id = `S${i + 1}`;
+                          const isOccupied = i === 12 || i === 15;
+                          const isSelected = booking.seats.includes(id);
+                          return (
+                            <button
+                              key={id}
+                              disabled={isOccupied}
+                              onClick={() => {
+                                if (isSelected) setBooking({ ...booking, seats: booking.seats.filter(s => s !== id) });
+                                else if (booking.seats.length < (booking.adults + booking.children)) setBooking({ ...booking, seats: [...booking.seats, id] });
+                              }}
+                              className={`w-8 h-8 md:w-10 md:h-10 rounded-t-xl transition-all ${isOccupied ? 'bg-gray-800 cursor-not-allowed' : isSelected ? 'bg-[#e11d48] scale-110 shadow-[0_0_15px_rgba(225,29,72,0.5)]' : 'bg-[#2a2a2a] hover:bg-gray-600'}`}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 4: F&B Categorized */}
+                {bookingStep === 4 && (
+                  <div className="space-y-8 animate-in fade-in">
+                    <h3 className="text-4xl font-black italic tracking-tighter uppercase">Select Snacks</h3>
+                    <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+                      {['POPCORN', 'BUNS', 'BEVERAGES'].map(cat => (
+                        <button key={cat} onClick={() => setFbCategory(cat)} className={`px-8 py-3 rounded-full text-[10px] font-black tracking-widest transition-all ${fbCategory === cat ? 'bg-[#e11d48] text-white' : 'bg-white/5 text-gray-500'}`}>{cat}</button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {FOOD_MENU[fbCategory].map(item => (
+                        <div key={item.id} className="bg-[#121212] p-8 rounded-[2rem] border border-white/5 flex items-center justify-between group">
+                          <div>
+                            <p className="font-black italic uppercase text-lg">{item.name}</p>
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 italic">{item.detail}</p>
+                            <p className="text-sm font-black text-[#e11d48] mt-2">Rs. {item.price.toLocaleString()}</p>
+                          </div>
+                          <button onClick={() => setBooking({ ...booking, food: [...booking.food, item] })} className="p-4 bg-white/5 rounded-2xl hover:bg-[#e11d48] transition-all"><Plus className="w-5 h-5" /></button>
+                        </div>
+                      ))}
+                    </div>
+                    {booking.food.length > 0 && (
+                      <div className="pt-10 flex flex-wrap gap-2">
+                        {booking.food.map((f, i) => (
+                          <div key={i} className="bg-[#e11d48]/10 text-[#e11d48] px-4 py-2 rounded-full text-[10px] font-black border border-[#e11d48]/20 flex items-center gap-2">
+                            {f.name} <button onClick={() => setBooking({ ...booking, food: booking.food.filter((_, idx) => idx !== i) })}><X className="w-3 h-3" /></button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 5: Details */}
+                {bookingStep === 5 && (
+                  <div className="space-y-8 animate-in fade-in">
+                    <h3 className="text-4xl font-black italic tracking-tighter uppercase">Final Details</h3>
+                    <div className="grid gap-4">
+                      <input type="text" placeholder="Full Name" className="w-full bg-[#121212] border border-white/5 p-6 rounded-3xl outline-none focus:border-[#e11d48]" value={booking.userDetails.name} onChange={(e) => setBooking({ ...booking, userDetails: { ...booking.userDetails, name: e.target.value } })} />
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <input type="email" placeholder="Email Address" className="w-full bg-[#121212] border border-white/5 p-6 rounded-3xl outline-none focus:border-[#e11d48]" value={booking.userDetails.email} onChange={(e) => setBooking({ ...booking, userDetails: { ...booking.userDetails, email: e.target.value } })} />
+                        <input type="tel" placeholder="Mobile Number" className="w-full bg-[#121212] border border-white/5 p-6 rounded-3xl outline-none focus:border-[#e11d48]" value={booking.userDetails.phone} onChange={(e) => setBooking({ ...booking, userDetails: { ...booking.userDetails, phone: e.target.value } })} />
+                      </div>
+                      <label className="flex items-center gap-4 cursor-pointer p-6 bg-white/5 rounded-3xl mt-6">
+                        <input type="checkbox" checked={booking.userDetails.tc} onChange={(e) => setBooking({ ...booking, userDetails: { ...booking.userDetails, tc: e.target.checked } })} className="w-6 h-6 rounded accent-[#e11d48]" />
+                        <span className="text-[10px] font-black text-gray-500 uppercase italic">I accept the WD15 Cinemas Terms of Service and Privacy Policy.</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 6: Payment (Credit/Debit Card Only) */}
+                {bookingStep === 6 && (
+                  <div className="space-y-8 animate-in fade-in">
+                    <h3 className="text-4xl font-black italic tracking-tighter uppercase">Payment Method</h3>
+                    <div className="bg-[#121212] p-10 rounded-[3rem] border border-white/5 space-y-10">
+                      <div className="flex items-center gap-4 pb-6 border-b border-white/5">
+                        <div className="bg-[#e11d48] p-3 rounded-2xl"><CreditCard className="w-8 h-8" /></div>
+                        <div><p className="font-black italic uppercase">Credit / Debit Card</p><p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Safe & Secure checkout</p></div>
+                      </div>
+                      <div className="grid gap-6">
+                        <input type="text" placeholder="Cardholder Name" className="w-full bg-black/50 border border-white/5 p-6 rounded-2xl outline-none focus:border-[#e11d48]" />
+                        <div className="relative">
+                          <input type="text" placeholder="Card Number" className="w-full bg-black/50 border border-white/5 p-6 rounded-2xl outline-none focus:border-[#e11d48]" />
+                          <div className="absolute right-6 top-1/2 -translate-y-1/2 flex gap-2">
+                            <img src="https://img.icons8.com/color/48/visa.png" className="h-6" alt="V" />
+                            <img src="https://img.icons8.com/color/48/mastercard.png" className="h-6" alt="M" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                          <input type="text" placeholder="MM / YY" className="w-full bg-black/40 border border-white/5 p-6 rounded-2xl outline-none focus:border-[#e11d48]" />
+                          <input type="password" placeholder="CVV" className="w-full bg-black/40 border border-white/5 p-6 rounded-2xl outline-none focus:border-[#e11d48]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Order Summary (Hidden in Step 1) */}
+              {bookingStep > 1 && (
+                <div className="lg:col-span-1">
+                  <div className="sticky top-32 bg-[#1e1e1e] p-10 rounded-[3rem] border border-white/10 shadow-2xl space-y-8 animate-in slide-in-from-right">
+                    <h4 className="text-xl font-black italic text-center pb-6 border-b border-white/5 uppercase tracking-widest">Order Summary</h4>
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-widest"><span>Date & Time</span><span className="text-white text-right">{booking.date} @ {booking.time}</span></div>
+                      <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-widest"><span>Cinema</span><span className="text-white text-right max-w-[150px]">{booking.cinema}</span></div>
+                      <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-widest"><span>Tickets</span><span className="text-white">{booking.adults} Ad, {booking.children} Ch</span></div>
+                      {booking.seats.length > 0 && <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-widest"><span>Seats</span><span className="text-[#e11d48]">{booking.seats.join(', ')}</span></div>}
+                      {booking.food.length > 0 && <div className="flex justify-between text-[10px] font-black text-gray-500 uppercase tracking-widest"><span>F&B Total</span><span className="text-white">Rs. {totals.food.toLocaleString()}</span></div>}
+                    </div>
+                    <div className="pt-8 border-t border-white/5">
+                      <div className="flex justify-between items-center mb-8">
+                        <span className="text-[11px] font-black text-gray-500 tracking-[0.2em]">PAYABLE</span>
+                        <span className="text-3xl font-black italic tracking-tighter">Rs. {totals.total.toLocaleString()}</span>
+                      </div>
+                      <button onClick={nextStep} className={`w-full py-5 rounded-2xl font-black text-lg tracking-widest uppercase shadow-xl transition-all active:scale-95 ${bookingStep === 6 ? 'bg-green-600' : 'bg-[#e11d48]'}`}>
+                        {bookingStep === 6 ? 'Confirm Pay' : 'Continue'}
+                      </button>
+                      <button onClick={() => setBookingStep(bookingStep - 1)} className="w-full text-gray-600 font-bold mt-4 text-[10px] uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {view === 'success' && (
+          <div className="max-w-7xl mx-auto px-4 py-40 text-center animate-in zoom-in duration-700">
+            <div className="w-24 h-24 bg-green-600/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-10 border border-green-500/30"><CheckCircle2 className="w-12 h-12" /></div>
+            <h2 className="text-7xl font-black italic mb-4 uppercase tracking-tighter">Success!</h2>
+            <p className="text-gray-400 text-xl mb-16 font-medium">Ticket ID: <span className="text-white font-black">WD15-TKT-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span></p>
+            <button onClick={() => setView('home')} className="bg-white text-black px-16 py-5 rounded-full font-black text-lg hover:bg-[#e11d48] hover:text-white transition-all shadow-2xl uppercase tracking-widest">Back to Homepage</button>
+          </div>
+        )}
+      </div>
+
+      {isLoginOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setIsLoginOpen(false)} />
+
+          <div className="relative bg-[#1a1a1a] border border-white/10 w-full max-w-md rounded-[2rem] p-8">
+
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              {authMode === "login" ? "Sign In" : authMode === "signup" ? "Create Account" : "Verify OTP"}
+            </h2>
+
+            {/* LOGIN */}
+            {authMode === "login" && (
+              <>
+                <input placeholder="Email" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input type="password" placeholder="Password" className="w-full mb-4 p-3 bg-black border border-white/10" />
+
+                <button
+                  onClick={() => {
+                    setUser({ name: "User" });
+                    setIsLoginOpen(false);
+                  }}
+                  className="w-full bg-red-600 py-3 mb-4"
+                >
+                  Login
+                </button>
+
+                <p className="text-sm text-gray-400 text-center">
+                  No account?
+                  <span onClick={() => setAuthMode("signup")} className="text-red-500 ml-2 cursor-pointer">
+                    Sign Up
+                  </span>
+                </p>
+              </>
+            )}
+
+            {/* SIGNUP */}
+            {authMode === "signup" && (
+              <>
+                <input placeholder="Name" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input placeholder="Email" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input type="password" placeholder="Password" className="w-full mb-4 p-3 bg-black border border-white/10" />
+
+                <button
+                  onClick={() => {
+                    const fakeOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                    setGeneratedOtp(fakeOtp);
+                    alert("OTP: " + fakeOtp);
+                    setAuthMode("otp");
+                  }}
+                  className="w-full bg-red-600 py-3 mb-4"
+                >
+                  Sign Up
+                </button>
+
+                <p className="text-sm text-gray-400 text-center">
+                  Have account?
+                  <span onClick={() => setAuthMode("login")} className="text-red-500 ml-2 cursor-pointer">
+                    Login
+                  </span>
+                </p>
+              </>
+            )}
+
+            {/* OTP */}
+            {authMode === "otp" && (
+              <>
+                <input
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full mb-4 p-3 bg-black border border-white/10"
+                />
+
+                <button
+                  onClick={() => {
+                    if (otp === generatedOtp) {
+                      setUser({ name: "New User" });
+                      setIsLoginOpen(false);
+                    } else {
+                      alert("Wrong OTP");
+                    }
+                  }}
+                  className="w-full bg-green-600 py-3"
+                >
+                  Verify
+                </button>
+              </>
+            )}
+
+            {/* GOOGLE BUTTON */}
+            <button className="w-full mt-4 border border-white/20 py-3 flex items-center justify-center gap-2 hover:bg-white hover:text-black transition">
+              <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" className="w-5" />
+              Continue with Google
+            </button>
+
+          </div>
+        </div>
+      )}
+
+
+      {/* FOOTER */}
+      <footer id="contact" className="bg-[#111111] text-white pt-32 pb-12 px-6 md:px-12">
+        <div className="max-w-[1440px] mx-auto">
+
+          {/* TOP GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24 mb-24 items-start">
+
+            {/* BRAND */}
+            <div className="space-y-8">
+              <div className="flex flex-col">
+                <span className="font-black text-4xl tracking-tighter leading-none">
+                  WD15 CINEMAS
+                </span>
+                <span className="text-red-600 text-[11px] tracking-[0.6em] font-light mt-1 uppercase">
+                  Movie Experience
+                </span>
+              </div>
+
+              <p className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em] leading-relaxed max-w-xs">
+                Experience movies like never before with premium screens, immersive sound, and luxury seating.
+              </p>
+
+              <div className="flex gap-4">
+                <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-white/40">
+                  <FaFacebook size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-white/40">
+                  <FaInstagram size={18} />
+                </a>
+                <a href="#" className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-white/40">
+                  <Smartphone size={18} />
+                </a>
+              </div>
+            </div>
+
+            {/* INQUIRIES */}
+            <div>
+              <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-10 border-l-2 border-red-600 pl-4">
+                Inquiries
+              </h5>
+
+              <div className="space-y-8">
+                <div className="flex gap-6 items-start">
+                  <Phone size={22} className="text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-white/30 mb-2 tracking-widest">
+                      Phone Line
+                    </p>
+                    <p className="text-xs font-bold uppercase tracking-widest">
+                      +94 77 123 4567
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 items-start">
+                  <Mail size={22} className="text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-white/30 mb-2 tracking-widest">
+                      Support Email
+                    </p>
+                    <p className="text-xs font-bold uppercase tracking-widest">
+                      support@wd15cinemas.com
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* LOCATION */}
+            <div>
+              <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-10 border-l-2 border-red-600 pl-4">
+                Visit Cinema
+              </h5>
+
+              <div className="space-y-8">
+                <div className="flex gap-6 items-start">
+                  <MapPin size={22} className="text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-white/30 mb-2 tracking-widest">
+                      Address
+                    </p>
+                    <p className="text-xs font-bold leading-relaxed">
+                      Colombo, Sri Lanka
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-6 items-start">
+                  <Clock size={22} className="text-red-600 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase font-black text-white/30 mb-2 tracking-widest">
+                      Opening Hours
+                    </p>
+                    <p className="text-xs font-bold uppercase tracking-widest">
+                      Daily <br /> 10:00 AM - 11:00 PM
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="bg-white/5 p-8 border border-white/10 rounded-2xl flex flex-col justify-between">
+              <div>
+                <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-4">
+                  Book Tickets
+                </h5>
+                <p className="text-[9px] text-white/40 uppercase mb-8 leading-relaxed">
+                  Secure your seats instantly with our fast and easy booking system.
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setView('home'); // make sure we are on home
+
+                  setTimeout(() => {
+                    document.getElementById('movies-section')?.scrollIntoView({
+                      behavior: 'smooth'
+                    });
+                  }, 100); // small delay to ensure render
+                }}
+                className="w-full bg-red-600 text-white py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all rounded-sm"
+              >
+                Buy Tickets Now
+              </button>
+            </div>
+
+          </div>
+
+          {/* BOTTOM */}
+          <div className="border-t border-white/10 pt-10 flex flex-col items-center gap-6 text-center">
+
+            <p className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">
+              © 2026 WD15 CINEMAS. ALL RIGHTS RESERVED.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] text-white/40 uppercase">
+              <a href="#" className="hover:text-white">Disclaimer</a>
+              <a href="#" className="hover:text-white">Privacy Policy</a>
+              <a href="#" className="hover:text-white">Terms & Conditions</a>
+            </div>
+
+          </div>
+
+        </div>
+      </footer>
+
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        @keyframes slow-zoom { from { transform: scale(1); } to { transform: scale(1.15); } }
+        .animate-slow-zoom { animation: slow-zoom 20s infinite alternate ease-in-out; }
+      `}} />
+    </div>
+  );
+}
