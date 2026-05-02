@@ -33,5 +33,10 @@ public class UpccomingMovies extends Movie{
         this.trailerUrl = trailerUrl;
     }
 
-
+    @Override
+    public void displaydetails() { //print details
+        super.displaydetails();
+        System.out.println("Movie releaseDate : " + releaseDate);
+        System.out.println("Movie trailerUrl : " + trailerUrl);
+    }
 }
