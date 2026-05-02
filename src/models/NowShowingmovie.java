@@ -39,11 +39,11 @@ public class NowShowingmovie extends Movie{
         System.out.println("Movie title : " + getTitle());
         System.out.println("Movie genre : " + getGenre());
         System.out.println("Movie director : " + getDirector());
-        System.out.println("Movie states : "  + getStatus());
+        System.out.println("\nMovie states : "  + getStatus());
         System.out.println("Movie Show Time : " + showTime);
         System.out.println("Movie theatre Number : " + theatreNumber);
         System.out.println("Movie total seats : " + getTotalSeats());
-        System.out.println("Movie price : " + getPrice());
+        System.out.println("\nMovie price : " + getPrice());
 
 
 
