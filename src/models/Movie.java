@@ -81,4 +81,13 @@ public class Movie {
         this.title = title;
     }
 
+    public void displaydetails(){
+        System.out.println("Movie ID : " + getId());
+        System.out.println("Movie title : " + getTitle());
+        System.out.println("Movie genre : " + getGenre());
+        System.out.println("Movie director : " + getDirector());
+        System.out.println("Movie states : "  + getStatus());
+        System.out.println("Movie total seats : " + getTotalSeats());
+        System.out.println("Movie price : " + getPrice());
+    }
 }
