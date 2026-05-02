@@ -45,7 +45,5 @@ public class NowShowingmovie extends Movie{
         System.out.println("Movie total seats : " + getTotalSeats());
         System.out.println("\nMovie price : " + getPrice());
 
-
-
     }
 }
