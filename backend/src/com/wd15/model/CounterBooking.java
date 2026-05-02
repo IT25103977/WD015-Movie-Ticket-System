@@ -43,13 +43,13 @@ public class CounterBooking extends Booking{
     }
     // method to Print Ticket
     public void printPhysicalTicket() {
-        System.out.println("Printing ticket for " + getMovieTitle() + "...");[cite: 1]
-        System.out.println("Issued by Staff: " + this.staffId + " at Counter: " + this.counterNumber);
+        System.out.println("Printing ticket for " + getMovieTitle() + "...");
+        System.out.println("Issued by Staff: " + this.staffId + " at Counter: " + this.counterNo);
     }
 
     // Method to cancel the online booking
     public void cancelBooking() {
         super.cancelBooking(); // Set status to cancelled[cite: 1]
-        System.out.println("Please collect your cash refund from Counter " + this.counterNumber);
+        System.out.println("Please collect your cash refund from Counter " + this.counterNo);
     }
 }

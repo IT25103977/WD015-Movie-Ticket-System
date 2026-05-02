@@ -101,5 +101,18 @@ public class Booking {
     public void setStatus(String status) {
         this.status = status;
     }
+    // method to cancel the booking
+    public void cancelBooking() {
+        this.status = "Cancelled";
+        System.out.println("Booking status updated to: " + this.status);
+    }
+
+    // method to display
+    public void displayBookingDetails() {
+        System.out.println("Booking ID: " + id);
+        System.out.println("Customer: " + customerName);
+        System.out.println("Movie: " + movieTitle);
+        System.out.println("Total: $" + totalPrice);
+    }
 
 }
