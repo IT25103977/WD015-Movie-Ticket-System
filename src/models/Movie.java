@@ -51,6 +51,4 @@ public class Movie {
         return status;
     }
 
-    //setters
-
 }
