@@ -35,7 +35,7 @@ public class NowShowingmovie extends Movie{
     }
 
     @Override
-    public void displaydetails() {
+    public void displaydetails() { //print details
         super.displaydetails();
         System.out.println("Movie Theatre Number : " + theatreNumber);
         System.out.println("\nMovie show time : " + showTime);
