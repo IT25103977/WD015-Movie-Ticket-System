@@ -13,7 +13,7 @@ public class Movie {
 
     }
 
-    public Movie(String title, int id, String genre, String director, double price, int totalSeats) { // full constructor
+    public Movie(String title, int id, String genre, String director, double price, int totalSeats) { // parameterized constructor
         this.title = title;
         this.id = id;
         this.genre = genre;
