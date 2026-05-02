@@ -1,13 +1,13 @@
 package models;
 
 public class Movie {
-    int id;  //attributes
-    String title;
-    String genre;
-    String director;
-    double price;
-    int totalSeats;
-    String status;
+    private int id;  //attributes
+    private String title;
+    private String genre;
+    private String director;
+    private double price;
+    private int totalSeats;
+    private String status;
 
     public Movie() { //empty constructor
 
