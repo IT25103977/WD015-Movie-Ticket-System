@@ -1,8 +1,8 @@
 package models;
 
 public class Movie {
-    int Id;  //attributes
-    String Title;
+    int id;  //attributes
+    String title;
     String genre;
     String director;
     double price;
@@ -14,8 +14,8 @@ public class Movie {
     }
 
     public Movie(String title, int id, String genre, String director, double price, int totalSeats) { // full constructor
-        Title = title;
-        Id = id;
+        this.title = title;
+        this.id = id;
         this.genre = genre;
         this.director = director;
         this.price = price;
@@ -24,11 +24,11 @@ public class Movie {
 
     //getters
     public int getId() {
-        return Id;
+        return id;
     }
 
     public String getTitle() {
-        return Title;
+        return title;
     }
 
     public String getGenre() {
@@ -50,5 +50,36 @@ public class Movie {
     public String getStatus() {
         return status;
     }
+
+    //setters
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setTotalSeats(int totalSeats) {
+        this.totalSeats = totalSeats;
+    }
+
+    public void setDirector(String director) {
+        this.director = director;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
 
 }
