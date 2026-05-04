@@ -1,4 +1,4 @@
-package models;
+package com.wd15.model;
 
 public class Movie {
     private int id; //attributes
