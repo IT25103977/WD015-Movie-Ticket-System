@@ -1,4 +1,4 @@
-package models;
+package com.wd15.model;
 
 public class NowShowingmovie extends Movie{
     private String showTime; //attributes
