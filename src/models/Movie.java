@@ -1,7 +1,7 @@
 package models;
 
 public class Movie {
-    private int id;
+    private int id; //attributes
     private String title;
     private String genre;
     private String director;
