@@ -1,4 +1,4 @@
-package models;
+package com.wd15.model;
 
 public class UpccomingMovies extends Movie{
     private String releaseDate; //attributes
