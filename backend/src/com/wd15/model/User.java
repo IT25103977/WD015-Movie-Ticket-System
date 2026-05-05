@@ -1,7 +1,7 @@
 package com.wd15.model;
 
 public class User {
-    // Attributes
+    //Attributes
     private long id;
     private String name;
     private String email;
@@ -14,17 +14,16 @@ public class User {
     }
 
     //Parameterized Constructor
-    public User(long id, String name, String email, String password, String role, String phoneNumber) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.phoneNumber = phoneNumber;
+    public User(String name,String email,String password,String phoneNumber) {
+        this.name=name;
+        this.email=email;
+        this.password=password;
+        this.role="User";//Default roles
+        this.phoneNumber=phoneNumber;
     }
 
     //All the getters
-    public int getId() {
+    public long getId() {
         return id;
     }
 
