@@ -12,6 +12,7 @@ class RegularUser extends User {
 
     //Parameterized constructor
     public RegularUser(String name,String email,String password,String phoneNumber,String membershipType) {
+        //Initialize parent class attributes first
         super(name, email, password, phoneNumber);
         this.membershipType=membershipType;
         this.totalBookings=0;
