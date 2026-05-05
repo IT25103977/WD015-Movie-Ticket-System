@@ -80,5 +80,5 @@ public class User {
         System.out.println("Email: " +email);
         System.out.println("Phone Number: " +phoneNumber);
     }
-    
+
 }
