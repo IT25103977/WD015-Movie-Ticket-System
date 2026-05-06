@@ -1,11 +1,10 @@
 package com.wd15.model;
 
-import java.security.PrivateKey;
 import java.time.LocalDateTime;
 
 public class Payment {
 
-    //Attributes
+    //Attributes (Encapsulation )
     private long id;
     private long    bookingId;
     private double amount;
@@ -19,7 +18,7 @@ public class Payment {
 
     }
 
-    public Payment(long bookingId, double amount, String paymentMethod, String paymentDate){
+    public Payment(long bookingId, double amount, String paymentMethod){
      this.bookingId = bookingId;
      this.amount = amount;
      this.paymentMethod = paymentMethod;
