@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Admin {
 
-    private Long id;
+    private Long id;//attributes
     private String adminCode;
     private String name;
     private String email;
