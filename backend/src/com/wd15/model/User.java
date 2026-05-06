@@ -1,6 +1,15 @@
 package com.wd15.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name="users")
+
 public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     //Attributes
     private long id;
     private String name;
@@ -9,7 +18,7 @@ public class User {
     private String role;
     private String phoneNumber;
 
-    //Default Constructor
+    //Empty Constructor
     public User() {
     }
 

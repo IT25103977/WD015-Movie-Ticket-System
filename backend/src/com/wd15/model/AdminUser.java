@@ -6,7 +6,7 @@ public class AdminUser extends User {
     private String accessLevel;
     private String department;
 
-    //Default constructor
+    //Empty constructor
     public AdminUser() {
         super();
     }
@@ -21,7 +21,7 @@ public class AdminUser extends User {
         this.department=department;
     }
 
-    //All the Getter
+    //All the Getters
     public String getAccessLevel() {
         return accessLevel;
     }

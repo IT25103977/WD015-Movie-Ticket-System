@@ -1,11 +1,12 @@
 package com.wd15.model;
 
 class RegularUser extends User {
+
     //Attributes
     private String membershipType;
     private int totalBookings;
 
-    //Default constructor
+    //Empty constructor
     public RegularUser() {
         super();
     }
