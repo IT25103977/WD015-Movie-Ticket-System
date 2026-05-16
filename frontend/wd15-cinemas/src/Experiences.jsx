@@ -4,7 +4,7 @@ function Experiences() {
             <h1 className="text-3xl font-bold mb-6">Experiences</h1>
 
             <div className="grid md:grid-cols-2 gap-6">
-                {/* IMAX */}
+
                 <div className="relative">
                     <img
                         src="https://th.bing.com/th/id/R.2c57a0ed4824b191de6271c76cc9349b?rik=aC6T8UVKNqhkrg&riu=http%3a%2f%2f109cinemas.net%2fimg%2fimax%2fabout%2ftheatres_28.jpg&ehk=U7fw3UIg88iUFRpyUyKEEsZc45b7diW65n8gxgej%2f20%3d&risl=&pid=ImgRaw&r=0"
@@ -16,7 +16,6 @@ function Experiences() {
                     </div>
                 </div>
 
-                {/* Dolby */}
                 <div className="relative">
                     <img
                         src="https://scopecinemas-v2.s3.amazonaws.com/images/1764910526256_dolby-atmos.jpg"

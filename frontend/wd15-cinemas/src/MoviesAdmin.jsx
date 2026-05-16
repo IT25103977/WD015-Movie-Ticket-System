@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
+import { apiPost, apiDelete, normalizeMovie, moviePayload } from './api';
 import {
     Film, PlusCircle, Trash2, Star, Clock,
     Ticket, ArrowUpRight, AlertCircle, X as CloseIcon,
@@ -6,7 +7,7 @@ import {
 } from 'lucide-react';
 
 export default function MovieManagement({ movies = [], setMovies }) {
-    // Movie Management UI State
+
     const [isAddingMovie, setIsAddingMovie] = useState(false);
     const [newMovie, setNewMovie] = useState({
         title: "",
@@ -21,12 +22,10 @@ export default function MovieManagement({ movies = [], setMovies }) {
         synopsis: ""
     });
 
-    // --- MOVIE ACTIONS ---
     const addMovie = () => {
         if (!newMovie.title) return;
 
         const movie = {
-            id: Date.now(),
             title: newMovie.title,
             image: newMovie.image || "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=500",
             tags: newMovie.tags ? newMovie.tags.split(",").map(t => t.trim()).filter(t => t !== "") : [],
@@ -41,28 +40,35 @@ export default function MovieManagement({ movies = [], setMovies }) {
             synopsis: newMovie.synopsis
         };
 
-        if (typeof setMovies === 'function') {
-            setMovies([...movies, movie]);
-        }
-
-        // Reset form
-        setNewMovie({
-            title: "", image: "", tags: "", rating: "", duration: "",
-            status: "Now Showing", adultPrice: "", childPrice: "",
-            trailerUrl: "", synopsis: ""
-        });
-        setIsAddingMovie(false);
+        apiPost('/movies', moviePayload(movie))
+            .then(saved => {
+                if (typeof setMovies === 'function') setMovies([...movies, normalizeMovie(saved)]);
+                setNewMovie({
+                    title: "", image: "", tags: "", rating: "", duration: "",
+                    status: "Now Showing", adultPrice: "", childPrice: "",
+                    trailerUrl: "", synopsis: ""
+                });
+                setIsAddingMovie(false);
+            })
+            .catch(() => {
+                if (typeof setMovies === 'function') setMovies([...movies, { ...movie, id: Date.now() }]);
+                setNewMovie({
+                    title: "", image: "", tags: "", rating: "", duration: "",
+                    status: "Now Showing", adultPrice: "", childPrice: "",
+                    trailerUrl: "", synopsis: ""
+                });
+                setIsAddingMovie(false);
+            });
     };
 
     const deleteMovie = (id) => {
         if (window.confirm('Are you sure you want to remove this movie from the library?')) {
-            if (typeof setMovies === 'function') {
-                setMovies(movies.filter(m => m.id !== id));
-            }
+            if (typeof setMovies === 'function') setMovies(movies.filter(m => m.id !== id));
+            apiDelete(`/movies/${id}`).catch(() => console.warn('Backend movie delete failed'));
         }
     };
 
-    // --- STATS ---
+
     const stats = useMemo(() => {
         const movieArray = Array.isArray(movies) ? movies : [];
         return {
@@ -79,7 +85,7 @@ export default function MovieManagement({ movies = [], setMovies }) {
         <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 font-sans selection:bg-[#e11d48]">
             <div className="max-w-7xl mx-auto space-y-8">
 
-                {/* HEADER SECTION */}
+
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-black italic tracking-tighter uppercase">Movie Management</h1>
@@ -95,7 +101,6 @@ export default function MovieManagement({ movies = [], setMovies }) {
                     </button>
                 </div>
 
-                {/* MOVIE STATS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                         { label: 'Total Library', val: stats.totalMovies, icon: Film, color: 'text-blue-500' },
@@ -114,7 +119,7 @@ export default function MovieManagement({ movies = [], setMovies }) {
                     ))}
                 </div>
 
-                {/* ADD MOVIE FORM */}
+
                 {isAddingMovie && (
                     <div className="bg-[#121212] border border-[#e11d48]/20 p-8 rounded-[2.5rem] space-y-6 shadow-2xl animate-in zoom-in duration-300">
                         <h2 className="text-xl font-black italic uppercase tracking-widest text-[#e11d48]">Create Movie Entry</h2>
@@ -167,7 +172,7 @@ export default function MovieManagement({ movies = [], setMovies }) {
                     </div>
                 )}
 
-                {/* MOVIE LISTING GRID */}
+
                 <div className="space-y-6">
                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
                         <h2 className="text-2xl font-black italic uppercase tracking-tight">Active Library</h2>

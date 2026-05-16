@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
+import { apiGet, apiPost, apiDelete } from './api';
 import {
     Film, PlusCircle, Trash2, Star, Clock,
     Ticket, ArrowUpRight, AlertCircle, X as CloseIcon,
@@ -14,10 +15,9 @@ export default function MovieManagement({
     showtimes = ["10:30 AM", "01:15 PM", "04:30 PM", "07:30 PM"],
     setShowtimes
 }) {
-    // Navigation State
-    const [activeTab, setActiveTab] = useState('movies'); // 'movies' | 'schedules'
 
-    // --- MOVIE MANAGEMENT STATE ---
+    const [activeTab, setActiveTab] = useState('movies');
+
     const [isAddingMovie, setIsAddingMovie] = useState(false);
     const [newMovie, setNewMovie] = useState({
         title: "", image: "", tags: "", rating: "", duration: "",
@@ -25,11 +25,9 @@ export default function MovieManagement({
         trailerUrl: "", synopsis: ""
     });
 
-    // --- SCHEDULE MANAGEMENT STATE ---
     const [newLocation, setNewLocation] = useState('');
     const [newTime, setNewTime] = useState('');
 
-    // --- MOVIE ACTIONS ---
     const addMovie = () => {
         if (!newMovie.title) return;
         const movie = {
@@ -62,28 +60,43 @@ export default function MovieManagement({
         }
     };
 
-    // --- SCHEDULE ACTIONS ---
     const handleAddLocation = () => {
         if (newLocation && typeof setCinemas === 'function') {
-            setCinemas([...cinemas, newLocation]);
-            setNewLocation('');
+            apiPost('/cinemas', { name: newLocation, location: newLocation })
+                .then(saved => {
+                    setCinemas([...cinemas.map(c => typeof c === 'string' ? c : c.name), saved.name]);
+                    setNewLocation('');
+                })
+                .catch(() => { setCinemas([...cinemas.map(c => typeof c === 'string' ? c : c.name), newLocation]); setNewLocation(''); });
         }
     };
 
     const handleDeleteLocation = (loc) => {
+        const locName = typeof loc === 'string' ? loc : loc.name;
         if (typeof setCinemas === 'function') {
-            setCinemas(cinemas.filter(c => c !== loc));
+            apiGet('/cinemas')
+                .then(items => {
+                    const found = items.find(c => c.name === locName);
+                    if (!found) return;
+                    return apiDelete(`/cinemas/${found.id}`);
+                })
+                .then(() => setCinemas(cinemas.filter(c => (typeof c === 'string' ? c : c.name) !== locName)))
+                .catch(() => alert('Cinema delete failed. Check backend is running.'));
         }
     };
 
     const handleAddTime = () => {
         if (newTime && typeof setShowtimes === 'function') {
-            setShowtimes([...showtimes, newTime].sort());
-            setNewTime('');
+            apiPost('/times', { slotValue: newTime })
+                .then(saved => {
+                    setShowtimes([...showtimes, saved.slotValue].sort());
+                    setNewTime('');
+                })
+                .catch(() => { setShowtimes([...showtimes, newTime].sort()); setNewTime(''); });
         }
     };
 
-    // --- STATS ---
+
     const stats = useMemo(() => {
         const movieArray = Array.isArray(movies) ? movies : [];
         return {
@@ -98,7 +111,6 @@ export default function MovieManagement({
         <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 font-sans selection:bg-[#e11d48]">
             <div className="max-w-7xl mx-auto space-y-8">
 
-                {/* HEADER & TAB NAVIGATION */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
                     <div>
                         <h1 className="text-4xl font-black italic tracking-tighter uppercase">Admin Console</h1>
@@ -123,7 +135,7 @@ export default function MovieManagement({
                     </div>
                 </div>
 
-                {/* TOP STATS */}
+
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                         { label: 'Total Movies', val: stats.totalMovies, icon: Film, color: 'text-blue-500' },
@@ -142,7 +154,6 @@ export default function MovieManagement({
                     ))}
                 </div>
 
-                {/* TAB CONTENT: MOVIES */}
                 {activeTab === 'movies' && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom duration-500">
                         <div className="flex items-center justify-between">
@@ -157,7 +168,7 @@ export default function MovieManagement({
                             </button>
                         </div>
 
-                        {/* ADD MOVIE FORM */}
+
                         {isAddingMovie && (
                             <div className="bg-[#121212] border border-[#e11d48]/20 p-8 rounded-[2.5rem] space-y-6 shadow-2xl animate-in zoom-in duration-300">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -193,7 +204,6 @@ export default function MovieManagement({
                             </div>
                         )}
 
-                        {/* MOVIE LISTING GRID */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {movies.map((m) => (
                                 <div key={m.id} className="bg-[#121212] border border-white/5 rounded-[3rem] overflow-hidden group flex flex-col hover:border-[#e11d48]/30 transition-all duration-500">
@@ -214,13 +224,13 @@ export default function MovieManagement({
                     </div>
                 )}
 
-                {/* TAB CONTENT: CINEMA & SCHEDULES */}
+
                 {activeTab === 'schedules' && (
                     <div className="space-y-12 animate-in fade-in slide-in-from-bottom duration-500">
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-                            {/* THEATER LOCATIONS */}
+
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
                                     <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-2xl"><MapPin size={24} /></div>
@@ -250,7 +260,7 @@ export default function MovieManagement({
                                 </div>
                             </div>
 
-                            {/* SHOW TIME SLOTS */}
+
                             <div className="space-y-8">
                                 <div className="flex items-center gap-3">
                                     <div className="p-3 bg-green-500/10 text-green-500 rounded-2xl"><Clock size={24} /></div>
@@ -273,7 +283,16 @@ export default function MovieManagement({
                                         {showtimes && showtimes.map((time, i) => (
                                             <div key={i} className="px-5 py-3 bg-white/5 rounded-full border border-white/5 flex items-center gap-3 group">
                                                 <span className="text-xs font-black tracking-widest">{time}</span>
-                                                <button onClick={() => setShowtimes(showtimes.filter(t => t !== time))} className="text-red-500 opacity-0 group-hover:opacity-100 transition-all"><CloseIcon size={14} /></button>
+                                                <button onClick={() => {
+                                                    apiGet('/times')
+                                                        .then(items => {
+                                                            const found = items.find(t => t.slotValue === time);
+                                                            if (!found) return;
+                                                            return apiDelete(`/times/${found.id}`);
+                                                        })
+                                                        .then(() => setShowtimes(showtimes.filter(t => t !== time)))
+                                                        .catch(() => alert('Time slot delete failed. Check backend is running.'));
+                                                }} className="text-red-500 opacity-0 group-hover:opacity-100 transition-all"><CloseIcon size={14} /></button>
                                             </div>
                                         ))}
                                     </div>
@@ -282,7 +301,6 @@ export default function MovieManagement({
 
                         </div>
 
-                        {/* MOVIE ASSIGNMENT OVERVIEW */}
                         <div className="space-y-8">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-blue-500/10 text-blue-500 rounded-2xl"><Layers size={24} /></div>
