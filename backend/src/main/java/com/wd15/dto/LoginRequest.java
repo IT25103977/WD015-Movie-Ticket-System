@@ -1,4 +1,4 @@
-package main.java.com.wd15.dto;
+package com.wd15.dto;
 
 public class LoginRequest {
 
