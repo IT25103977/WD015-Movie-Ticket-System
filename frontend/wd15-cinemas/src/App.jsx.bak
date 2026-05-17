@@ -1,9 +1,8 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Movies from './Movies';
 import Experiences from './Experiences';
 import AdminDashboard from "./AdminDashboard";
-import { apiGet, apiPost, normalizeMovie } from './api';
 import {
   Search, User, Menu, X, ChevronRight, ChevronLeft, Play,
   Ticket, Star, Info, Lock, Eye, EyeOff, CreditCard,
@@ -15,6 +14,7 @@ import {
 
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 
+// --- MOCK DATABASE (OOP Structure) ---
 
 const INITIAL_MOVIES = [
   {
@@ -216,6 +216,7 @@ const CINEMAS = [
 
 const SHOWTIMES = ["10:30 AM", "01:15 PM", "04:30 PM", "07:30 PM", "10:15 PM"];
 
+// --- Helper for Dates ---
 const generateDates = () => {
   const dates = [];
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -234,7 +235,7 @@ const generateDates = () => {
   return dates;
 };
 
-
+// --- COMPONENTS ---
 
 const TrailerModal = ({ url, onClose }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -248,7 +249,7 @@ const TrailerModal = ({ url, onClose }) => (
   </div>
 );
 
-const Navbar = ({ onOpenLogin, user, onLogout, setView, onOpenAdmin }) => (
+const Navbar = ({ onOpenLogin, user, onLogout, setView }) => (
   <nav className="fixed top-0 left-0 right-0 z-[60] bg-[#121212]/95 backdrop-blur-md border-b border-white/10">
     <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
       <div className="flex items-center gap-2 cursor-pointer group" onClick={() => window.location.reload()}>
@@ -273,7 +274,7 @@ const Navbar = ({ onOpenLogin, user, onLogout, setView, onOpenAdmin }) => (
         <button onClick={() => setView('experiences')} className="hover:text-white">
           Experiences
         </button>
-        <button onClick={onOpenAdmin} className="hover:text-white">
+        <button onClick={() => setView('admin')} className="hover:text-white">
           Admin
         </button>
       </div>
@@ -296,13 +297,15 @@ const Navbar = ({ onOpenLogin, user, onLogout, setView, onOpenAdmin }) => (
 
 export default function App() {
   const [users, setUsers] = useState([
-    { id: 1, name: "Admin", email: "admin@gmail.com", password: "admin123", role: "Admin", status: "Active", joinedDate: "2026-05-16", lastLogin: "Just now" },
-    { id: 2, name: "Tharusha", email: "user@gmail.com", password: "user123", role: "Customer", status: "Active", joinedDate: "2026-05-16", lastLogin: "Just now" }
+    { id: 1, name: "Admin", email: "admin@gmail.com", role: "Admin" },
+    { id: 2, name: "Tharusha", email: "user@gmail.com", role: "Customer" }
   ]);
-  const [cinemas, setCinemas] = useState(CINEMAS);
+  const [cinemas, setCinemas] = useState([
+    { id: 1, name: "Scope Cinemas Colombo" },
+    { id: 2, name: "Kandy City Cinema" },
+    { id: 3, name: "Galle Cinema" }
+  ]);
   const [shows, setShows] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [showtimes, setShowtimes] = useState(SHOWTIMES);
   const [view, setView] = useState('home');
   const [isAdmin, setIsAdmin] = useState(false);
   const [bookingStep, setBookingStep] = useState(1);
@@ -315,10 +318,11 @@ export default function App() {
   const [activeTrailer, setActiveTrailer] = useState(null);
   const [fbCategory, setFbCategory] = useState('POPCORN');
 
-
-  const [authMode, setAuthMode] = useState("login"); // login | signup
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [signupForm, setSignupForm] = useState({ name: '', email: '', password: '' });
+  //Login
+  const [authMode, setAuthMode] = useState("login"); // login | signup | otp
+  const [otp, setOtp] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [tempUser, setTempUser] = useState(null);
 
   const [booking, setBooking] = useState({
     cinema: '',
@@ -341,62 +345,20 @@ export default function App() {
   const dates = useMemo(() => generateDates(), []);
 
   useEffect(() => {
-    apiGet('/movies')
-      .then(data => setMovies(data.map(normalizeMovie)))
-      .catch(err => {
-        console.error('Error fetching movies:', err);
-        setMovies(INITIAL_MOVIES);
+    fetch("http://localhost:8080/api/movies")
+      .then((res) => res.json())
+      .then((data) => {
+        setMovies(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching movies:", err);
       });
-
-    apiGet('/users')
-      .then(setUsers)
-      .catch(err => console.error('Error fetching users:', err));
-
-    apiGet('/cinemas')
-      .then(data => setCinemas(data.map(c => typeof c === 'string' ? c : c.name)))
-      .catch(err => console.error('Error fetching cinemas:', err));
-
-    apiGet('/shows')
-      .then(setShows)
-      .catch(err => console.error('Error fetching shows:', err));
-
-    apiGet('/times')
-      .then(data => setShowtimes(data.map(t => t.slotValue)))
-      .catch(err => console.error('Error fetching time slots:', err));
-
-    apiGet('/bookings')
-      .then(setBookings)
-      .catch(err => console.error('Error fetching bookings:', err));
   }, []);
-
-
-  const openAdmin = () => {
-    const password = window.prompt('Enter admin password');
-    if (password === 'admin123') {
-      setIsAdmin(true);
-      setView('admin');
-    } else if (password !== null) {
-      alert('Wrong admin password');
-    }
-  };
-
-  const sameBookingSlot = (item) => {
-    const movieId = item.show?.movie?.id || item.movieId;
-    const cinemaName = item.show?.cinema?.name || item.cinemaName;
-    const showDate = item.show?.showDate || item.date;
-    const showTime = item.show?.showTime || item.time;
-    return movieId === selectedMovie?.id && cinemaName === booking.cinema && showDate === booking.date && showTime === booking.time;
-  };
-
-  const bookedSeats = useMemo(() => {
-    if (!selectedMovie) return [];
-    return bookings.filter(sameBookingSlot).flatMap(item => item.seats || []);
-  }, [bookings, selectedMovie, booking.cinema, booking.date, booking.time]);
 
   const startBooking = (movie) => {
     if (movie.status === 'Coming Soon') return;
     setSelectedMovie(movie);
-    setBooking({ ...booking, adults: 1, children: 0, seats: [], food: [], cinema: (typeof cinemas[0] === 'string' ? cinemas[0] : cinemas[0]?.name) || CINEMAS[0], time: '' });
+    setBooking({ ...booking, adults: 1, children: 0, seats: [], food: [], cinema: CINEMAS[0], time: '' });
     setBookingStep(1);
     setView('booking');
   };
@@ -409,85 +371,6 @@ export default function App() {
     setBookingStep(s => s + 1);
   };
 
-  const handleLogin = () => {
-    apiPost('/users/login', loginForm)
-      .then(data => {
-        setUser(data);
-        setIsAdmin(data.role === 'Admin');
-        setIsLoginOpen(false);
-      })
-      .catch(() => {
-        const localUser = users.find(u => (u.email === loginForm.email || u.name === loginForm.email) && u.password === loginForm.password);
-        if (localUser) {
-          setUser(localUser);
-          setIsAdmin(localUser.role === 'Admin');
-          setIsLoginOpen(false);
-        } else {
-          alert('Wrong email/name or password');
-        }
-      });
-  };
-
-  const handleSignup = () => {
-    if (!signupForm.name || !signupForm.email || !signupForm.password) return alert('Please fill all signup fields');
-    const draft = {
-      ...signupForm,
-      role: 'Customer',
-      status: 'Active',
-      joinedDate: new Date().toISOString().split('T')[0],
-      lastLogin: 'Just now',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(signupForm.name)
-    };
-    apiPost('/users/signup', draft)
-      .then(data => {
-        setUser(data);
-        setUsers(prev => [...prev, data]);
-      })
-      .catch(() => {
-        const localUser = { ...draft, id: Date.now() };
-        setUser(localUser);
-        setUsers(prev => [...prev, localUser]);
-      })
-      .finally(() => {
-        setIsLoginOpen(false);
-        setAuthMode('login');
-        setSignupForm({ name: '', email: '', password: '' });
-      });
-  };
-
-  const confirmBooking = () => {
-    const matchingShow = shows.find(s => s.movie?.id === selectedMovie?.id && s.cinema?.name === booking.cinema && s.showDate === booking.date && s.showTime === booking.time)
-      || shows.find(s => s.movie?.id === selectedMovie?.id)
-      || shows[0];
-    const bookingPayload = {
-      showId: matchingShow?.id || 1,
-      movieId: selectedMovie?.id,
-      userId: user?.id,
-      cinemaName: booking.cinema,
-      date: booking.date,
-      time: booking.time,
-      adults: booking.adults,
-      children: booking.children,
-      seats: booking.seats,
-      foodNames: booking.food.map(item => item.name),
-      customerName: booking.userDetails.name,
-      email: booking.userDetails.email,
-      phone: booking.userDetails.phone,
-      grandTotal: totals.total,
-      payment: { method: 'Credit / Debit Card', status: 'PAID', amount: totals.total }
-    };
-    apiPost('/bookings', bookingPayload)
-      .then(saved => {
-        setBookings(prev => [...prev, saved]);
-        setView('success');
-      })
-      .catch((err) => {
-        console.error('Booking backend failed, saved locally:', err);
-        setBookings(prev => [...prev, { ...bookingPayload, id: Date.now(), user, show: { movie: selectedMovie, cinema: { name: booking.cinema }, showDate: booking.date, showTime: booking.time } }]);
-        setView('success');
-      });
-  };
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans">
       <Navbar
@@ -495,7 +378,6 @@ export default function App() {
         onOpenLogin={() => setIsLoginOpen(true)}
         onLogout={() => setUser(null)}
         setView={setView}
-        onOpenAdmin={openAdmin}
       />
       {activeTrailer && <TrailerModal url={activeTrailer} onClose={() => setActiveTrailer(null)} />}
 
@@ -525,16 +407,13 @@ export default function App() {
               ))}
             </div>
 
-
+            {/* Quick Booking */}
             <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-40">
               <div className="bg-[#1e1e1e] border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-end gap-6">
                 <div className="flex-1 w-full space-y-2">
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Select Cinema</label>
                   <select className="w-full bg-[#121212] border border-white/5 text-white p-4 rounded-xl outline-none focus:border-[#e11d48] appearance-none" onChange={(e) => setBooking({ ...booking, cinema: e.target.value })}>
-                    {cinemas.map((c, i) => {
-                      const cinemaName = typeof c === 'string' ? c : c.name;
-                      return <option key={cinemaName || i} value={cinemaName}>{cinemaName}</option>;
-                    })}
+                    {CINEMAS.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="flex-1 w-full space-y-2">
@@ -547,7 +426,7 @@ export default function App() {
               </div>
             </div>
 
-
+            {/* Movie Listings */}
             <section id="movies-section" className="max-w-7xl mx-auto px-4 py-24">
               <div className="flex border-b border-white/5 mb-16">
                 {["NOW SHOWING", "COMING SOON"].map(tab => (
@@ -595,9 +474,6 @@ export default function App() {
             setShows={setShows}
             cinemas={cinemas}
             setCinemas={setCinemas}
-            showtimes={showtimes}
-            setShowtimes={setShowtimes}
-            bookings={bookings}
           />
         )}
 
@@ -612,7 +488,7 @@ export default function App() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               <div className={`${bookingStep === 1 ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-12`}>
-
+                {/* Step 1: Cinema & Date & Time */}
                 {bookingStep === 1 && (
                   <div className="space-y-12 animate-in fade-in">
                     <div className="text-center space-y-4">
@@ -624,10 +500,7 @@ export default function App() {
                       <div className="space-y-4">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">1. Select Cinema Location</label>
                         <select className="w-full bg-[#121212] border border-white/5 p-5 rounded-2xl outline-none focus:border-[#e11d48] text-center" value={booking.cinema} onChange={(e) => setBooking({ ...booking, cinema: e.target.value })}>
-                          {cinemas.map((c, i) => {
-                            const cinemaName = typeof c === 'string' ? c : c.name;
-                            return <option key={cinemaName || i} value={cinemaName}>{cinemaName}</option>;
-                          })}
+                          {CINEMAS.map(c => <option key={c}>{c}</option>)}
                         </select>
                       </div>
 
@@ -651,7 +524,7 @@ export default function App() {
                       <div className="space-y-4">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest text-center block">3. Available Times</label>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                          {showtimes.map(t => (
+                          {SHOWTIMES.map(t => (
                             <button key={t} onClick={() => setBooking({ ...booking, time: t })} className={`py-4 rounded-xl font-black text-xs border ${booking.time === t ? 'bg-[#e11d48] border-[#e11d48]' : 'bg-white/5 border-white/5 hover:border-white/20'}`}>{t}</button>
                           ))}
                         </div>
@@ -662,6 +535,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* Step 2: Tickets */}
                 {bookingStep === 2 && (
                   <div className="space-y-8 animate-in fade-in">
                     <h3 className="text-4xl font-black italic tracking-tighter uppercase">Ticket Selection</h3>
@@ -686,7 +560,7 @@ export default function App() {
                   </div>
                 )}
 
-
+                {/* Step 3: Seats */}
                 {bookingStep === 3 && (
                   <div className="space-y-10 animate-in fade-in">
                     <h3 className="text-4xl font-black italic tracking-tighter text-center uppercase">Choose {booking.adults + booking.children} Seats</h3>
@@ -695,7 +569,7 @@ export default function App() {
                       <div className="grid grid-cols-10 gap-3 place-items-center">
                         {Array.from({ length: 40 }).map((_, i) => {
                           const id = `S${i + 1}`;
-                          const isOccupied = bookedSeats.includes(id);
+                          const isOccupied = i === 12 || i === 15;
                           const isSelected = booking.seats.includes(id);
                           return (
                             <button
@@ -714,7 +588,7 @@ export default function App() {
                   </div>
                 )}
 
-
+                {/* Step 4: F&B Categorized */}
                 {bookingStep === 4 && (
                   <div className="space-y-8 animate-in fade-in">
                     <h3 className="text-4xl font-black italic tracking-tighter uppercase">Select Snacks</h3>
@@ -747,6 +621,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* Step 5: Details */}
                 {bookingStep === 5 && (
                   <div className="space-y-8 animate-in fade-in">
                     <h3 className="text-4xl font-black italic tracking-tighter uppercase">Final Details</h3>
@@ -764,7 +639,7 @@ export default function App() {
                   </div>
                 )}
 
-
+                {/* Step 6: Payment (Credit/Debit Card Only) */}
                 {bookingStep === 6 && (
                   <div className="space-y-8 animate-in fade-in">
                     <h3 className="text-4xl font-black italic tracking-tighter uppercase">Payment Method</h3>
@@ -792,7 +667,7 @@ export default function App() {
                 )}
               </div>
 
-
+              {/* Order Summary (Hidden in Step 1) */}
               {bookingStep > 1 && (
                 <div className="lg:col-span-1">
                   <div className="sticky top-32 bg-[#1e1e1e] p-10 rounded-[3rem] border border-white/10 shadow-2xl space-y-8 animate-in slide-in-from-right">
@@ -809,7 +684,7 @@ export default function App() {
                         <span className="text-[11px] font-black text-gray-500 tracking-[0.2em]">PAYABLE</span>
                         <span className="text-3xl font-black italic tracking-tighter">Rs. {totals.total.toLocaleString()}</span>
                       </div>
-                      <button onClick={bookingStep === 6 ? confirmBooking : nextStep} className={`w-full py-5 rounded-2xl font-black text-lg tracking-widest uppercase shadow-xl transition-all active:scale-95 ${bookingStep === 6 ? 'bg-green-600' : 'bg-[#e11d48]'}`}>
+                      <button onClick={nextStep} className={`w-full py-5 rounded-2xl font-black text-lg tracking-widest uppercase shadow-xl transition-all active:scale-95 ${bookingStep === 6 ? 'bg-green-600' : 'bg-[#e11d48]'}`}>
                         {bookingStep === 6 ? 'Confirm Pay' : 'Continue'}
                       </button>
                       <button onClick={() => setBookingStep(bookingStep - 1)} className="w-full text-gray-600 font-bold mt-4 text-[10px] uppercase tracking-widest hover:text-white transition-colors">Go Back</button>
@@ -838,17 +713,20 @@ export default function App() {
           <div className="relative bg-[#1a1a1a] border border-white/10 w-full max-w-md rounded-[2rem] p-8">
 
             <h2 className="text-2xl font-bold mb-6 text-center">
-              {authMode === "login" ? "Sign In" : "Create Account"}
+              {authMode === "login" ? "Sign In" : authMode === "signup" ? "Create Account" : "Verify OTP"}
             </h2>
 
-
+            {/* LOGIN */}
             {authMode === "login" && (
               <>
-                <input placeholder="Email or Name" value={loginForm.email} onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })} className="w-full mb-3 p-3 bg-black border border-white/10" />
-                <input type="password" placeholder="Password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} className="w-full mb-4 p-3 bg-black border border-white/10" />
+                <input placeholder="Email" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input type="password" placeholder="Password" className="w-full mb-4 p-3 bg-black border border-white/10" />
 
                 <button
-                  onClick={handleLogin}
+                  onClick={() => {
+                    setUser({ name: "User" });
+                    setIsLoginOpen(false);
+                  }}
                   className="w-full bg-red-600 py-3 mb-4"
                 >
                   Login
@@ -863,15 +741,20 @@ export default function App() {
               </>
             )}
 
-
+            {/* SIGNUP */}
             {authMode === "signup" && (
               <>
-                <input placeholder="Name" value={signupForm.name} onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })} className="w-full mb-3 p-3 bg-black border border-white/10" />
-                <input placeholder="Email" value={signupForm.email} onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })} className="w-full mb-3 p-3 bg-black border border-white/10" />
-                <input type="password" placeholder="Password" value={signupForm.password} onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })} className="w-full mb-4 p-3 bg-black border border-white/10" />
+                <input placeholder="Name" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input placeholder="Email" className="w-full mb-3 p-3 bg-black border border-white/10" />
+                <input type="password" placeholder="Password" className="w-full mb-4 p-3 bg-black border border-white/10" />
 
                 <button
-                  onClick={handleSignup}
+                  onClick={() => {
+                    const fakeOtp = Math.floor(100000 + Math.random() * 900000).toString();
+                    setGeneratedOtp(fakeOtp);
+                    alert("OTP: " + fakeOtp);
+                    setAuthMode("otp");
+                  }}
                   className="w-full bg-red-600 py-3 mb-4"
                 >
                   Sign Up
@@ -886,7 +769,33 @@ export default function App() {
               </>
             )}
 
+            {/* OTP */}
+            {authMode === "otp" && (
+              <>
+                <input
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full mb-4 p-3 bg-black border border-white/10"
+                />
 
+                <button
+                  onClick={() => {
+                    if (otp === generatedOtp) {
+                      setUser({ name: "New User" });
+                      setIsLoginOpen(false);
+                    } else {
+                      alert("Wrong OTP");
+                    }
+                  }}
+                  className="w-full bg-green-600 py-3"
+                >
+                  Verify
+                </button>
+              </>
+            )}
+
+            {/* GOOGLE BUTTON */}
             <button className="w-full mt-4 border border-white/20 py-3 flex items-center justify-center gap-2 hover:bg-white hover:text-black transition">
               <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" className="w-5" />
               Continue with Google
@@ -897,14 +806,14 @@ export default function App() {
       )}
 
 
-
+      {/* FOOTER */}
       <footer id="contact" className="bg-[#111111] text-white pt-32 pb-12 px-6 md:px-12">
         <div className="max-w-[1440px] mx-auto">
 
-
+          {/* TOP GRID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-24 mb-24 items-start">
 
-
+            {/* BRAND */}
             <div className="space-y-8">
               <div className="flex flex-col">
                 <span className="font-black text-4xl tracking-tighter leading-none">
@@ -932,6 +841,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* INQUIRIES */}
             <div>
               <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-10 border-l-2 border-red-600 pl-4">
                 Inquiries
@@ -964,6 +874,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* LOCATION */}
             <div>
               <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-10 border-l-2 border-red-600 pl-4">
                 Visit Cinema
@@ -996,6 +907,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* CTA */}
             <div className="bg-white/5 p-8 border border-white/10 rounded-2xl flex flex-col justify-between">
               <div>
                 <h5 className="text-white text-[12px] font-black uppercase tracking-[0.5em] mb-4">
@@ -1024,11 +936,11 @@ export default function App() {
 
           </div>
 
-
+          {/* BOTTOM */}
           <div className="border-t border-white/10 pt-10 flex flex-col items-center gap-6 text-center">
 
             <p className="text-[10px] uppercase tracking-[0.4em] text-white/20 font-black">
-              Â© 2026 WD15 CINEMAS. ALL RIGHTS RESERVED.
+              © 2026 WD15 CINEMAS. ALL RIGHTS RESERVED.
             </p>
 
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] text-white/40 uppercase">
@@ -1050,4 +962,3 @@ export default function App() {
     </div>
   );
 }
-
