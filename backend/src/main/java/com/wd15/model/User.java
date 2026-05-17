@@ -1,4 +1,4 @@
-package main.java.com.wd15.model;
+package com.wd15.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
