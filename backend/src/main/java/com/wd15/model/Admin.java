@@ -4,16 +4,16 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class Admin extends User {
-    private String adminLevel;
+    private String adminLevel; //attributes
 
-    public Admin() {
+    public Admin() { //empty constructor
     }
 
-    public Admin(String name, String email, String password, String adminLevel) {
+    public Admin(String name, String email, String password, String adminLevel) { //parameterized constructor
         super(name, email, password, "Admin");
         this.adminLevel = adminLevel;
     }
-
+    //setters and getters
     public String getAdminLevel() {
         return adminLevel;
     }
