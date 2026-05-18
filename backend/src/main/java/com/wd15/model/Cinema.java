@@ -4,17 +4,18 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class Cinema extends BaseEntity {
-    private String name;
+    private String name; //attributes
     private String location;
 
-    public Cinema() {
+    public Cinema() {//empty constructor
     }
 
-    public Cinema(String name, String location) {
+    public Cinema(String name, String location) { //parameterize constructor
         this.name = name;
         this.location = location;
     }
-
+    
+    //setters and getters
     public String getName() {
         return name;
     }
