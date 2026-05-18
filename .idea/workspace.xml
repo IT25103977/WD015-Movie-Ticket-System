@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c5180fca-7e02-4fe8-980c-4ef0c4b5411d" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/com/wd15/model/Booking.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/com/wd15/model/Booking.java" afterDir="false" />
+    <list default="true" id="c5180fca-7e02-4fe8-980c-4ef0c4b5411d" name="Changes" comment="creating main class">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/wd15/model/Booking.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/wd15/model/Booking.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -12,12 +13,24 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "IT25102452"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/IT25103977/WD015-Movie-Ticket-System.git",
+    "accountId": "fc5d8ca6-1825-4b98-b4f9-ef9c8ffc37e5"
+  }
+}]]></component>
   <component name="ProblemsViewState">
     <option name="autoscrollToSource" value="true" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="3D7gVnP1LV2MscBNlD93hU9VsAC" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -27,11 +40,24 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "develop",
+    "git-widget-placeholder": "feature/Chandra-bookingmanagement",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/devindanayanajith/WD015-Movie-Ticket-System"
   }
 }]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="WD15" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="WD15" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -48,5 +74,9 @@
       <updated>1777638548652</updated>
     </task>
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="creating main class" />
+    <option name="LAST_COMMIT_MESSAGE" value="creating main class" />
   </component>
 </project>
