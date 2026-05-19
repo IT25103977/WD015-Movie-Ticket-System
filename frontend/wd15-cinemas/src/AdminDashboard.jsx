@@ -1,9 +1,10 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import Users from "./Users";
 import MoviesAdmin from "./MoviesAdmin";
 import ShowsAdmin from "./ShowsAdmin";
+import TicketHistory from "./TicketHistory";
 
-function AdminDashboard({ movies, setMovies, users, setUsers, shows, setShows }) {
+function AdminDashboard({ movies, setMovies, users, setUsers, shows, setShows, cinemas, setCinemas, showtimes, setShowtimes, bookings }) {
 
     const [tab, setTab] = useState("movies");
 
@@ -67,6 +68,7 @@ function AdminDashboard({ movies, setMovies, users, setUsers, shows, setShows })
                 <button onClick={() => setTab("movies")} className="hover:text-red-500">Movies</button>
                 <button onClick={() => setTab("users")} className="hover:text-red-500">Users</button>
                 <button onClick={() => setTab("shows")} className="hover:text-red-500">Shows</button>
+                <button onClick={() => setTab("tickets")} className="hover:text-red-500">Ticket History</button>
             </div>
 
             {/* MOVIES TAB */}
@@ -85,9 +87,16 @@ function AdminDashboard({ movies, setMovies, users, setUsers, shows, setShows })
                     shows={shows}
                     setShows={setShows}
                     movies={movies}
+                    setMovies={setMovies}
+                    cinemas={cinemas}
+                    setCinemas={setCinemas}
+                    showtimes={showtimes}
+                    setShowtimes={setShowtimes}
                 />
             )}
-
+            {tab === "tickets" && (
+                <TicketHistory bookings={bookings} />
+            )}
         </div>
     );
 }

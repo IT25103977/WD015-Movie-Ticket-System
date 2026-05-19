@@ -1,0 +1,2 @@
+mvnd spring-boot:run 
+npm run dev

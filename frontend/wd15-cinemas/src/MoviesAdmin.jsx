@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
+import { apiPost, apiDelete, normalizeMovie, moviePayload } from './api';
 import {
     Film, PlusCircle, Trash2, Star, Clock,
     Ticket, ArrowUpRight, AlertCircle, X as CloseIcon,
@@ -26,7 +27,6 @@ export default function MovieManagement({ movies = [], setMovies }) {
         if (!newMovie.title) return;
 
         const movie = {
-            id: Date.now(),
             title: newMovie.title,
             image: newMovie.image || "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=500",
             tags: newMovie.tags ? newMovie.tags.split(",").map(t => t.trim()).filter(t => t !== "") : [],
@@ -41,24 +41,31 @@ export default function MovieManagement({ movies = [], setMovies }) {
             synopsis: newMovie.synopsis
         };
 
-        if (typeof setMovies === 'function') {
-            setMovies([...movies, movie]);
-        }
-
-        // Reset form
-        setNewMovie({
-            title: "", image: "", tags: "", rating: "", duration: "",
-            status: "Now Showing", adultPrice: "", childPrice: "",
-            trailerUrl: "", synopsis: ""
-        });
-        setIsAddingMovie(false);
+        apiPost('/movies', moviePayload(movie))
+            .then(saved => {
+                if (typeof setMovies === 'function') setMovies([...movies, normalizeMovie(saved)]);
+                setNewMovie({
+                    title: "", image: "", tags: "", rating: "", duration: "",
+                    status: "Now Showing", adultPrice: "", childPrice: "",
+                    trailerUrl: "", synopsis: ""
+                });
+                setIsAddingMovie(false);
+            })
+            .catch(() => {
+                if (typeof setMovies === 'function') setMovies([...movies, { ...movie, id: Date.now() }]);
+                setNewMovie({
+                    title: "", image: "", tags: "", rating: "", duration: "",
+                    status: "Now Showing", adultPrice: "", childPrice: "",
+                    trailerUrl: "", synopsis: ""
+                });
+                setIsAddingMovie(false);
+            });
     };
 
     const deleteMovie = (id) => {
         if (window.confirm('Are you sure you want to remove this movie from the library?')) {
-            if (typeof setMovies === 'function') {
-                setMovies(movies.filter(m => m.id !== id));
-            }
+            if (typeof setMovies === 'function') setMovies(movies.filter(m => m.id !== id));
+            apiDelete(`/movies/${id}`).catch(() => console.warn('Backend movie delete failed'));
         }
     };
 

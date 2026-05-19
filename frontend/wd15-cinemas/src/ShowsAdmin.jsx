@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
+import { apiGet, apiPost, apiDelete } from './api';
 import {
     Film, PlusCircle, Trash2, Star, Clock,
     Ticket, ArrowUpRight, AlertCircle, X as CloseIcon,
@@ -65,21 +66,37 @@ export default function MovieManagement({
     // --- SCHEDULE ACTIONS ---
     const handleAddLocation = () => {
         if (newLocation && typeof setCinemas === 'function') {
-            setCinemas([...cinemas, newLocation]);
-            setNewLocation('');
+            apiPost('/cinemas', { name: newLocation, location: newLocation })
+                .then(saved => {
+                    setCinemas([...cinemas.map(c => typeof c === 'string' ? c : c.name), saved.name]);
+                    setNewLocation('');
+                })
+                .catch(() => { setCinemas([...cinemas.map(c => typeof c === 'string' ? c : c.name), newLocation]); setNewLocation(''); });
         }
     };
 
     const handleDeleteLocation = (loc) => {
+        const locName = typeof loc === 'string' ? loc : loc.name;
         if (typeof setCinemas === 'function') {
-            setCinemas(cinemas.filter(c => c !== loc));
+            apiGet('/cinemas')
+                .then(items => {
+                    const found = items.find(c => c.name === locName);
+                    if (!found) return;
+                    return apiDelete(`/cinemas/${found.id}`);
+                })
+                .then(() => setCinemas(cinemas.filter(c => (typeof c === 'string' ? c : c.name) !== locName)))
+                .catch(() => alert('Cinema delete failed. Check backend is running.'));
         }
     };
 
     const handleAddTime = () => {
         if (newTime && typeof setShowtimes === 'function') {
-            setShowtimes([...showtimes, newTime].sort());
-            setNewTime('');
+            apiPost('/times', { slotValue: newTime })
+                .then(saved => {
+                    setShowtimes([...showtimes, saved.slotValue].sort());
+                    setNewTime('');
+                })
+                .catch(() => { setShowtimes([...showtimes, newTime].sort()); setNewTime(''); });
         }
     };
 
@@ -273,7 +290,16 @@ export default function MovieManagement({
                                         {showtimes && showtimes.map((time, i) => (
                                             <div key={i} className="px-5 py-3 bg-white/5 rounded-full border border-white/5 flex items-center gap-3 group">
                                                 <span className="text-xs font-black tracking-widest">{time}</span>
-                                                <button onClick={() => setShowtimes(showtimes.filter(t => t !== time))} className="text-red-500 opacity-0 group-hover:opacity-100 transition-all"><CloseIcon size={14} /></button>
+                                                <button onClick={() => {
+                                                    apiGet('/times')
+                                                        .then(items => {
+                                                            const found = items.find(t => t.slotValue === time);
+                                                            if (!found) return;
+                                                            return apiDelete(`/times/${found.id}`);
+                                                        })
+                                                        .then(() => setShowtimes(showtimes.filter(t => t !== time)))
+                                                        .catch(() => alert('Time slot delete failed. Check backend is running.'));
+                                                }} className="text-red-500 opacity-0 group-hover:opacity-100 transition-all"><CloseIcon size={14} /></button>
                                             </div>
                                         ))}
                                     </div>
